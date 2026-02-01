@@ -1,3 +1,84 @@
+class ProductNetworkModel {
+  final String barcode;
+  final String? name;
+  final String? altName;
+  final Map<String, dynamic>? pictures;
+  final String? quantity;
+  final List<String>? brands;
+  final List<String>? manufacturingCountries;
+  final dynamic nutriScore;
+  final dynamic novaScore;
+  final dynamic ecoScoreGrade;
+  final Map<String, dynamic>? ingredients;
+  final Map<String, dynamic>? traces;
+  final Map<String, dynamic>? allergens;
+  final Map<String, dynamic>? additives;
+  final Map<String, dynamic>? analysis;
+
+  ProductNetworkModel({
+    required this.barcode,
+    this.name,
+    this.altName,
+    this.pictures,
+    this.quantity,
+    this.brands,
+    this.manufacturingCountries,
+    this.nutriScore,
+    this.novaScore,
+    this.ecoScoreGrade,
+    this.ingredients,
+    this.traces,
+    this.allergens,
+    this.additives,
+    this.analysis,
+  });
+
+  factory ProductNetworkModel.fromJSON(Map<String, dynamic> json) {
+    return ProductNetworkModel(
+      barcode: json['barcode'] ?? '',
+      name: json['name'],
+      altName: json['altName'],
+      pictures: json['pictures'],
+      quantity: json['quantity'],
+      brands: (json['brands'] as List?)?.map((e) => e.toString()).toList(),
+      manufacturingCountries: (json['manufacturingCountries'] as List?)?.map((e) => e.toString()).toList(),
+      nutriScore: json['nutriScore'],
+      novaScore: json['novaScore'],
+      ecoScoreGrade: json['ecoScoreGrade'],
+      ingredients: json['ingredients'],
+      traces: json['traces'],
+      allergens: json['allergens'],
+      additives: json['additives'],
+      analysis: json['analysis'],
+    );
+  }
+
+  Product toProduct() {
+    return Product(
+      barcode: barcode,
+      name: name,
+      altName: altName,
+      picture: (pictures?['product'] ?? pictures?['front']) as String?,
+      quantity: quantity,
+      brands: brands,
+      manufacturingCountries: manufacturingCountries,
+      nutriScore: Product._parseNutriScore(nutriScore),
+      novaScore: Product._parseNovaScore(novaScore),
+      greenScore: Product._parseGreenScore(ecoScoreGrade),
+      ingredients: (ingredients?['list'] as List?)?.map((e) => e.toString()).toList(),
+      ingredientsWithAllergens: ingredients?['withAllergens'],
+      traces: (traces?['list'] as List?)?.map((e) => e.toString()).toList(),
+      allergens: (allergens?['list'] as List?)?.map((e) => e.toString()).toList(),
+      additives: (additives as Map?)?.map((k, v) => MapEntry(k.toString(), v.toString())),
+      nutrientLevels: null,
+      nutritionFacts: null,
+      ingredientsFromPalmOil: ingredients?['containsPalmOil'],
+      containsPalmOil: ProductAnalysis.fromString(analysis?['palmOil']),
+      isVegan: ProductAnalysis.fromString(analysis?['vegan']),
+      isVegetarian: ProductAnalysis.fromString(analysis?['vegetarian']),
+    );
+  }
+}
 // ignore_for_file: constant_identifier_names
 class Product {
   final String barcode;
@@ -49,6 +130,84 @@ class Product {
     this.isVegan,
     this.isVegetarian,
   });
+
+  factory Product.fromJSON(Map<String, dynamic> json) {
+    return Product(
+      barcode: json['barcode'] ?? '',
+      name: json['name'],
+      altName: json['altName'],
+      picture: (json['pictures']?['product'] ?? json['pictures']?['front']) as String?,
+      quantity: json['quantity'],
+      brands: (json['brands'] as List?)?.map((e) => e.toString()).toList(),
+      manufacturingCountries: (json['manufacturingCountries'] as List?)?.map((e) => e.toString()).toList(),
+      nutriScore: _parseNutriScore(json['nutriScore']),
+      novaScore: _parseNovaScore(json['novaScore']),
+      greenScore: _parseGreenScore(json['ecoScoreGrade']),
+      ingredients: (json['ingredients']?['list'] as List?)?.map((e) => e.toString()).toList(),
+      ingredientsWithAllergens: json['ingredients']?['withAllergens'],
+      traces: (json['traces']?['list'] as List?)?.map((e) => e.toString()).toList(),
+      allergens: (json['allergens']?['list'] as List?)?.map((e) => e.toString()).toList(),
+      additives: (json['additives'] as Map?)?.map((k, v) => MapEntry(k.toString(), v.toString())),
+      nutrientLevels: null, // À compléter si besoin
+      nutritionFacts: null, // À compléter si besoin
+      ingredientsFromPalmOil: json['ingredients']?['containsPalmOil'],
+      containsPalmOil: ProductAnalysis.fromString(json['analysis']?['palmOil']),
+      isVegan: ProductAnalysis.fromString(json['analysis']?['vegan']),
+      isVegetarian: ProductAnalysis.fromString(json['analysis']?['vegetarian']),
+    );
+  }
+
+  static ProductNutriScore _parseNutriScore(dynamic value) {
+    switch (value) {
+      case 'A': return ProductNutriScore.A;
+      case 'B': return ProductNutriScore.B;
+      case 'C': return ProductNutriScore.C;
+      case 'D': return ProductNutriScore.D;
+      case 'E': return ProductNutriScore.E;
+      default: return ProductNutriScore.unknown;
+    }
+  }
+
+  static ProductNovaScore _parseNovaScore(dynamic value) {
+    switch (value) {
+      case 'group1':
+      case 1: return ProductNovaScore.group1;
+      case 'group2':
+      case 2: return ProductNovaScore.group2;
+      case 'group3':
+      case 3: return ProductNovaScore.group3;
+      case 'group4':
+      case 4: return ProductNovaScore.group4;
+      default: return ProductNovaScore.unknown;
+    }
+  }
+
+  static ProductGreenScore _parseGreenScore(dynamic value) {
+    switch (value) {
+      case 'A': return ProductGreenScore.A;
+      case 'APlus': return ProductGreenScore.APlus;
+      case 'B': return ProductGreenScore.B;
+      case 'C': return ProductGreenScore.C;
+      case 'D': return ProductGreenScore.D;
+      case 'E': return ProductGreenScore.E;
+      case 'F': return ProductGreenScore.F;
+      default: return ProductGreenScore.unknown;
+    }
+  }
+}
+
+class ProductResponse {
+  final Product? product;
+  final String? error;
+
+  ProductResponse({this.product, this.error});
+
+  factory ProductResponse.fromJSON(Map<String, dynamic> json) {
+    return ProductResponse(
+      product: json['response'] != null ? Product.fromJSON(json['response']) : null,
+      error: json['error'],
+    );
+  }
 }
 
 class NutritionFacts {

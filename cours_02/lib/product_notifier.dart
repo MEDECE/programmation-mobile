@@ -24,13 +24,12 @@ class ProductNotifier extends ChangeNotifier {
       
       if (response.statusCode == 200 && response.data != null) {
         final data = response.data is String ? json.decode(response.data) : response.data;
-        
+        ProductNetworkModel? networkModel;
         if (data['response'] != null) {
-          final productJson = data['response'];
-          _product = _parseProduct(productJson);
-        } else {
-          _error = 'Produit non trouvé dans la réponse.';
+          networkModel = ProductNetworkModel.fromJSON(data['response']);
         }
+        _product = networkModel?.toProduct();
+        _error = data['error'] ?? (_product == null ? 'Produit non trouvé dans la réponse.' : null);
       } else {
         _error = 'Erreur HTTP: ${response.statusCode}';
       }
