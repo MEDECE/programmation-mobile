@@ -24,7 +24,10 @@ class MyApp extends StatelessWidget {
         textTheme: TextTheme(headlineMedium: TextStyle()),
       ),
       debugShowCheckedModeBanner: false,
-      home: const ProductPage(),
+      home: ProductProvider(
+        product: generateProduct(),
+        child: const ProductPage(),
+      ),
     );
   }
 }

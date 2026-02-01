@@ -12,6 +12,7 @@ class ProductPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final product = ProductProvider.of(context)!.product;
     return Scaffold(
       body: SizedBox.expand(
         child: Stack(
@@ -22,7 +23,7 @@ class ProductPage extends StatelessWidget {
               end: 0.0,
               height: IMAGE_HEIGHT,
               child: Image.network(
-                'https://images.unsplash.com/photo-1482049016688-2d3e1b311543?q=80&w=1310&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
+                product.picture ?? '',
                 fit: BoxFit.cover,
                 cacheHeight:
                     (IMAGE_HEIGHT * MediaQuery.devicePixelRatioOf(context))
@@ -49,11 +50,18 @@ class ProductPage extends StatelessWidget {
                   crossAxisAlignment: .start,
                   children: [
                     Text(
-                      'Petits pois et carottes',
+                      product.name ?? '',
                       style: context.theme.title1,
                     ),
-                    Text('Cassegrain', style: context.theme.title2),
-                    Scores(),
+                    Text(
+                      product.brands?.isNotEmpty == true ? product.brands!.first : '',
+                      style: context.theme.title2,
+                    ),
+                    Scores(
+                      nutriscore: product.nutriScore,
+                      novaScore: product.novaScore,
+                      greenScore: product.greenScore,
+                    ),
                   ],
                 ),
               ),
@@ -66,7 +74,11 @@ class ProductPage extends StatelessWidget {
 }
 
 class Scores extends StatelessWidget {
-  const Scores({super.key});
+  final ProductNutriScore? nutriscore;
+  final ProductNovaScore? novaScore;
+  final ProductGreenScore? greenScore;
+
+  const Scores({super.key, this.nutriscore, this.novaScore, this.greenScore});
 
   @override
   Widget build(BuildContext context) {
@@ -78,18 +90,18 @@ class Scores extends StatelessWidget {
             children: [
               Expanded(
                 flex: 44,
-                child: _Nutriscore(nutriscore: ProductNutriScore.B),
+                child: _Nutriscore(nutriscore: nutriscore ?? ProductNutriScore.unknown),
               ),
               VerticalDivider(),
               Expanded(
                 flex: 56,
-                child: _NovaGroup(novaScore: ProductNovaScore.group4),
+                child: _NovaGroup(novaScore: novaScore ?? ProductNovaScore.unknown),
               ),
             ],
           ),
         ),
         Divider(),
-        _GreenScore(greenScore: ProductGreenScore.A),
+        _GreenScore(greenScore: greenScore ?? ProductGreenScore.unknown),
       ],
     );
   }
