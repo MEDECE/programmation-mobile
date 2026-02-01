@@ -5,8 +5,10 @@ import 'dart:convert';
 
 class ProductNotifier extends ChangeNotifier {
   Product? _product;
+  String? _error;
 
   Product? get product => _product;
+  String? get error => _error;
 
   ProductNotifier() {
     loadProductFromApi('5000159484695');
@@ -14,18 +16,26 @@ class ProductNotifier extends ChangeNotifier {
 
   Future<void> loadProductFromApi(String barcode) async {
     _product = null;
+    _error = null;
     notifyListeners();
     try {
       final dio = Dio();
       final response = await dio.get('https://api.formation-flutter.fr/v2/getProduct?barcode=$barcode');
+      
       if (response.statusCode == 200 && response.data != null) {
-        // On suppose que la clé "product" contient le JSON du produit
         final data = response.data is String ? json.decode(response.data) : response.data;
-        final productJson = data['product'];
-        _product = _parseProduct(productJson);
+        
+        if (data['response'] != null) {
+          final productJson = data['response'];
+          _product = _parseProduct(productJson);
+        } else {
+          _error = 'Produit non trouvé dans la réponse.';
+        }
+      } else {
+        _error = 'Erreur HTTP: ${response.statusCode}';
       }
     } catch (e) {
-      // Gérer l'erreur (optionnel : logger, etc.)
+      _error = 'Erreur lors de la requête: $e';
       _product = null;
     }
     notifyListeners();
@@ -36,24 +46,24 @@ class ProductNotifier extends ChangeNotifier {
       barcode: json['barcode'] ?? '',
       name: json['name'],
       altName: json['altName'],
-      picture: json['picture'],
+      picture: (json['pictures']?['product'] ?? json['pictures']?['front']) as String?,
       quantity: json['quantity'],
       brands: (json['brands'] as List?)?.map((e) => e.toString()).toList(),
       manufacturingCountries: (json['manufacturingCountries'] as List?)?.map((e) => e.toString()).toList(),
       nutriScore: _parseNutriScore(json['nutriScore']),
       novaScore: _parseNovaScore(json['novaScore']),
-      greenScore: _parseGreenScore(json['greenScore']),
-      ingredients: (json['ingredients'] as List?)?.map((e) => e.toString()).toList(),
-      ingredientsWithAllergens: json['ingredientsWithAllergens'],
-      traces: (json['traces'] as List?)?.map((e) => e.toString()).toList(),
-      allergens: (json['allergens'] as List?)?.map((e) => e.toString()).toList(),
+      greenScore: _parseGreenScore(json['ecoScoreGrade']),
+      ingredients: (json['ingredients']?['list'] as List?)?.map((e) => e.toString()).toList(),
+      ingredientsWithAllergens: json['ingredients']?['withAllergens'],
+      traces: (json['traces']?['list'] as List?)?.map((e) => e.toString()).toList(),
+      allergens: (json['allergens']?['list'] as List?)?.map((e) => e.toString()).toList(),
       additives: (json['additives'] as Map?)?.map((k, v) => MapEntry(k.toString(), v.toString())),
       nutrientLevels: null, // À compléter si besoin
       nutritionFacts: null, // À compléter si besoin
-      ingredientsFromPalmOil: json['ingredientsFromPalmOil'],
-      containsPalmOil: ProductAnalysis.fromString(json['containsPalmOil']),
-      isVegan: ProductAnalysis.fromString(json['isVegan']),
-      isVegetarian: ProductAnalysis.fromString(json['isVegetarian']),
+      ingredientsFromPalmOil: json['ingredients']?['containsPalmOil'],
+      containsPalmOil: ProductAnalysis.fromString(json['analysis']?['palmOil']),
+      isVegan: ProductAnalysis.fromString(json['analysis']?['vegan']),
+      isVegetarian: ProductAnalysis.fromString(json['analysis']?['vegetarian']),
     );
   }
 

@@ -17,12 +17,33 @@ class ProductPage extends StatelessWidget {
     return Consumer<ProductNotifier>(
       builder: (context, notifier, _) {
         final product = notifier.product;
-        if (product == null) {
+        final error = notifier.error;
+        if (error != null) {
+          return ErrorView(message: error);
+        } else if (product == null) {
           return const LoadingView();
         } else {
           return SuccessView(product: product);
         }
       },
+    );
+  }
+}
+
+class ErrorView extends StatelessWidget {
+  final String message;
+  const ErrorView({super.key, required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: Text(
+          message,
+          style: const TextStyle(color: Colors.red, fontSize: 18),
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 }
