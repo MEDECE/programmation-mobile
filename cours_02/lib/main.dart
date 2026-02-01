@@ -3,7 +3,8 @@ import 'package:formation_flutter/l10n/app_localizations.dart';
 import 'package:formation_flutter/res/app_colors.dart';
 import 'package:formation_flutter/res/app_theme_extension.dart';
 import 'package:formation_flutter/screens/product_page.dart';
-import 'package:formation_flutter/product_provider.dart';
+import 'product_provider.dart';
+import 'model/product.dart';
 
 void main() {
   runApp(const MyApp());
