@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:formation_flutter/l10n/app_localizations.dart';
 import '../model/product.dart';
-import '../product_provider.dart';
+import '../product_notifier.dart';
+import 'package:provider/provider.dart';
 import 'package:formation_flutter/res/app_colors.dart';
 import 'package:formation_flutter/res/app_icons.dart';
 import 'package:formation_flutter/res/app_theme_extension.dart';
@@ -13,7 +14,40 @@ class ProductPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final product = ProductProvider.of(context);
+    return Consumer<ProductNotifier>(
+      builder: (context, notifier, _) {
+        final product = notifier.product;
+        if (product == null) {
+          return const LoadingView();
+        } else {
+          return SuccessView(product: product);
+        }
+      },
+    );
+  }
+}
+
+class LoadingView extends StatelessWidget {
+  const LoadingView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
+    );
+  }
+}
+
+class SuccessView extends StatelessWidget {
+  final Product product;
+  const SuccessView({super.key, required this.product});
+
+  static const double IMAGE_HEIGHT = 300.0;
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: SizedBox.expand(
         child: Stack(
