@@ -5,13 +5,15 @@ class ProductProvider extends InheritedWidget {
   final Product product;
 
   const ProductProvider({
-    super.key,
     required this.product,
     required super.child,
+    super.key,
   });
 
-  static ProductProvider? of(BuildContext context) {
-    return context.dependOnInheritedWidgetOfExactType<ProductProvider>();
+  static Product of(BuildContext context) {
+    final ProductProvider? provider = context.dependOnInheritedWidgetOfExactType<ProductProvider>();
+    assert(provider != null, 'Aucun ProductProvider trouvé dans le contexte');
+    return provider!.product;
   }
 
   @override

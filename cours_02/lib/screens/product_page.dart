@@ -12,7 +12,7 @@ class ProductPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final product = ProductProvider.of(context)!.product;
+    final product = ProductProvider.of(context);
     return Scaffold(
       body: SizedBox.expand(
         child: Stack(
@@ -47,7 +47,7 @@ class ProductPage extends StatelessWidget {
                   vertical: 30.0,
                 ),
                 child: Column(
-                  crossAxisAlignment: .start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       product.name ?? '',
@@ -58,9 +58,9 @@ class ProductPage extends StatelessWidget {
                       style: context.theme.title2,
                     ),
                     Scores(
-                      nutriscore: product.nutriScore,
-                      novaScore: product.novaScore,
-                      greenScore: product.greenScore,
+                      nutriscore: product.nutriScore ?? ProductNutriScore.unknown,
+                      novaScore: product.novaScore ?? ProductNovaScore.unknown,
+                      greenScore: product.greenScore ?? ProductGreenScore.unknown,
                     ),
                   ],
                 ),
@@ -74,11 +74,16 @@ class ProductPage extends StatelessWidget {
 }
 
 class Scores extends StatelessWidget {
-  final ProductNutriScore? nutriscore;
-  final ProductNovaScore? novaScore;
-  final ProductGreenScore? greenScore;
+  final ProductNutriScore nutriscore;
+  final ProductNovaScore novaScore;
+  final ProductGreenScore greenScore;
 
-  const Scores({super.key, this.nutriscore, this.novaScore, this.greenScore});
+  const Scores({
+    super.key,
+    required this.nutriscore,
+    required this.novaScore,
+    required this.greenScore,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -86,22 +91,22 @@ class Scores extends StatelessWidget {
       children: [
         IntrinsicHeight(
           child: Row(
-            crossAxisAlignment: .start,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
                 flex: 44,
-                child: _Nutriscore(nutriscore: nutriscore ?? ProductNutriScore.unknown),
+                child: _Nutriscore(nutriscore: nutriscore),
               ),
               VerticalDivider(),
               Expanded(
                 flex: 56,
-                child: _NovaGroup(novaScore: novaScore ?? ProductNovaScore.unknown),
+                child: _NovaGroup(novaScore: novaScore),
               ),
             ],
           ),
         ),
         Divider(),
-        _GreenScore(greenScore: greenScore ?? ProductGreenScore.unknown),
+        _GreenScore(greenScore: greenScore),
       ],
     );
   }
